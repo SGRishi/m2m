@@ -1,1 +1,3 @@
+# Netlify reads this file to determine the Python runtime.
+# Pinning a supported version ensures the function deploys without 404s.
 3.10.8

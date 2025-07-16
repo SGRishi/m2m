@@ -1,18 +1,2 @@
-transkun
-yt-dlp
-ncls
-pretty_midi
-scipy
-torch
-torchaudio
-mir_eval
-pydub
-seaborn
-matplotlib
-tensorboard
-tqdm
-torch_optimizer
-sox
-soxr
-moduleconf
-flask
+# Example dependency for Python functions
+mido

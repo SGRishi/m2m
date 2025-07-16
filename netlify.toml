@@ -1,8 +1,9 @@
 [build]
-  publish = "./"
-  functions = "netlify/functions"
+  publish = "."           # Serve index.html from repo root
+  functions = "netlify/functions"  # Directory where Netlify looks for functions
+
 [build.environment]
-  PYTHON_VERSION="3.10.8"
+  PYTHON_VERSION = "3.10"  # Supported Python runtime for functions
 
 [functions]
-  included_files = ["final.py"]
+  # Presence of this section enables Python functions
