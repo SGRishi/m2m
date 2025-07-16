@@ -1,11 +1,15 @@
+#!/usr/bin/env python3
 import base64
 import io
 import os
+import sys
 import tempfile
 import cgi
 import json
-from typing import Dict
+import traceback
 import pretty_midi
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from final import (
     download_audio_from_url,
     audio_to_polyphonic_midi,
@@ -18,7 +22,11 @@ def handler(event, context):
     try:
         content_type = event['headers'].get('content-type') or event['headers'].get('Content-Type')
         if not content_type:
-            return {'statusCode': 400, 'body': 'Missing Content-Type'}
+            return {
+                'statusCode': 400,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': 'Missing Content-Type'
+            }
         body = event.get('body', '')
         if event.get('isBase64Encoded'):
             body_bytes = base64.b64decode(body)
@@ -43,7 +51,11 @@ def handler(event, context):
             src_mid = temp_mid.name
             os.remove(audio_path)
         else:
-            return {'statusCode': 400, 'body': 'No input provided'}
+            return {
+                'statusCode': 400,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': 'No input provided'
+            }
         pm = pretty_midi.PrettyMIDI(src_mid)
         tonic_pc = pretty_midi.note_name_to_number(infer_tonic_name(pm)) % 12
         convert_to_mode(pm, tonic_pc, mode)
@@ -56,11 +68,18 @@ def handler(event, context):
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/octet-stream',
-                'Content-Disposition': f'attachment; filename="{outname}"'
+                'Content-Disposition': f'attachment; filename="{outname}"',
+                'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': True,
             'body': base64.b64encode(out_data).decode()
         }
     except Exception as e:
-        return {'statusCode': 500, 'body': str(e)}
+        print("Conversion error:", str(e))
+        print(traceback.format_exc())
+        return {
+            'statusCode': 500,
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': str(e)
+        }
 

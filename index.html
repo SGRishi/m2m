@@ -23,7 +23,7 @@ input, select, button {
 </head>
 <body>
 <h1>M2M Converter</h1>
-<form action="/.netlify/functions/convert" method="post" enctype="multipart/form-data">
+<form id="convertForm" action="/.netlify/functions/convert" method="post" enctype="multipart/form-data">
 <div>Upload MIDI file: <input type="file" name="midi"></div>
 <div>or YouTube URL: <input type="text" name="url" size="40"></div>
 <div>
@@ -43,5 +43,34 @@ input, select, button {
 <div>Output filename: <input type="text" name="out" value="output.mid"></div>
 <button type="submit">Convert</button>
 </form>
+<progress id="progressBar" max="100" value="0" style="width:100%; display:none;"></progress>
+<script>
+const form = document.getElementById('convertForm');
+const progress = document.getElementById('progressBar');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  progress.value = 0;
+  progress.style.display = 'block';
+  const data = new FormData(form);
+  const out = data.get('out') || 'output.mid';
+  try {
+    const res = await fetch(form.action, { method: 'POST', body: data });
+    if (!res.ok) throw new Error('Conversion failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = out;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    progress.value = 100;
+  } catch (err) {
+    alert(err);
+  }
+  setTimeout(() => progress.style.display = 'none', 500);
+});
+</script>
 </body>
 </html>
