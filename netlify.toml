@@ -1,4 +1,6 @@
 [build]
+  # The site is purely static, so no build command is needed. Netlify will
+  # automatically bundle Python functions when present.
   publish = "./"
   functions = "netlify/functions"
 [build.environment]

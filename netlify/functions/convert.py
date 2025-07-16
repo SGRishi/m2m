@@ -56,11 +56,16 @@ def handler(event, context):
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/octet-stream',
-                'Content-Disposition': f'attachment; filename="{outname}"'
+                'Content-Disposition': f'attachment; filename="{outname}"',
+                'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': True,
             'body': base64.b64encode(out_data).decode()
         }
     except Exception as e:
-        return {'statusCode': 500, 'body': str(e)}
+        return {
+            'statusCode': 500,
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': str(e)
+        }
 

@@ -1,4 +1,7 @@
 {
   "name": "m2m-netlify",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "echo 'no build step'"
+  }
 }
