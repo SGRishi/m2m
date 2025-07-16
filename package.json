@@ -1,0 +1,7 @@
+{
+  "name": "m2m-netlify",
+  "private": true,
+  "devDependencies": {
+    "@netlify/plugin-python": "^2"
+  }
+}
