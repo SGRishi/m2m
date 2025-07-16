@@ -44,5 +44,12 @@ def convert():
     pm.write(out_path)
     return send_file(out_path, as_attachment=True, download_name=outname)
 
+# Netlify expects the serverless function under '/.netlify/functions/convert'.
+# When running this Flask app locally, the HTML still posts to that path, so we
+# provide an alias that reuses the same logic.
+@app.route('/.netlify/functions/convert', methods=['POST'])
+def convert_netlify():
+    return convert()
+
 if __name__ == '__main__':
     app.run()
