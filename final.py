@@ -5,7 +5,7 @@ combined_audio2midi_and_mode_convert.py
 This script prompts for either a YouTube link or a local audio/MIDI file (or accepts two args),
 supports downloading via yt-dlp (with fallback if MP3 conversion fails),
 transcribes polyphonic piano audio to MIDI via Transkun if needed,
-then converts between major and minor modes (natural or harmonic minor).
+then converts MIDI between various modes.
 
 Usage:
     # Interactive mode (no args): choose source type, then prompts
@@ -30,6 +30,35 @@ import pretty_midi
 # Supported local file extensions
 AUDIO_EXTS = {'.mp3', '.wav', '.flac', '.ogg', '.m4a'}
 ALL_INPUT_EXTS = AUDIO_EXTS.union({'.mid'})
+
+# Mapping of target modes relative to Ionian (major)
+MODE_MAP = {
+    'aeolian':    {'lower': {4, 9, 11}, 'raise': set()},
+    'harmonic_minor': {'lower': {4, 9}, 'raise': set()},
+    'dorian':     {'lower': {4, 11}, 'raise': set()},
+    'phrygian':   {'lower': {2, 4, 9, 11}, 'raise': set()},
+    'lydian':     {'lower': set(), 'raise': {5}},
+    'mixolydian': {'lower': {11}, 'raise': set()},
+    'locrian':    {'lower': {2, 4, 7, 9, 11}, 'raise': set()},
+    'major':      {'lower': set(), 'raise': {3, 8, 10}},  # for minor → major
+}
+
+
+def convert_to_mode(pm: pretty_midi.PrettyMIDI, tonic_pc: int, mode: str) -> str:
+    """Shift notes in-place to the given mode. Returns description."""
+    info = MODE_MAP.get(mode)
+    if info is None:
+        raise ValueError(f"Unsupported mode: {mode}")
+    to_lower = info.get('lower', set())
+    to_raise = info.get('raise', set())
+    for inst in pm.instruments:
+        for note in inst.notes:
+            pc = (note.pitch - tonic_pc) % 12
+            if pc in to_lower:
+                note.pitch -= 1
+            elif pc in to_raise:
+                note.pitch += 1
+    return mode.replace('_', ' ')
 
 
 def infer_tonic_name(pm: pretty_midi.PrettyMIDI) -> str:
@@ -96,12 +125,22 @@ def ensure_mid_extension(path: str) -> str:
 
 
 def choose_conversion() -> str:
-    print("Choose conversion:")
-    print(" 1: Major → Natural minor")
-    print(" 2: Major → Harmonic minor")
-    print(" 3: Minor → Major")
-    c = input("Enter 1,2 or 3: ")
-    if c not in {'1','2','3'}:
+    print("Choose target mode:")
+    options = [
+        ("1", "Major → Natural minor (Aeolian)"),
+        ("2", "Major → Harmonic minor"),
+        ("3", "Minor → Major"),
+        ("4", "Major → Dorian"),
+        ("5", "Major → Phrygian"),
+        ("6", "Major → Lydian"),
+        ("7", "Major → Mixolydian"),
+        ("8", "Major → Locrian"),
+    ]
+    for k, desc in options:
+        print(f" {k}: {desc}")
+    c = input("Enter choice: ")
+    valid = {k for k, _ in options}
+    if c not in valid:
         print("Invalid choice.")
         sys.exit(1)
     return c
@@ -153,27 +192,18 @@ def main():
 
     # Conversion choice
     conv = choose_conversion()
-    if conv=='1':
-        to_lower={4,9,11}
-        for inst in pm.instruments:
-            for note in inst.notes:
-                if (note.pitch-tonic_pc)%12 in to_lower:
-                    note.pitch-=1
-        desc = 'natural minor'
-    elif conv=='2':
-        to_lower={4,9}
-        for inst in pm.instruments:
-            for note in inst.notes:
-                if (note.pitch-tonic_pc)%12 in to_lower:
-                    note.pitch-=1
-        desc = 'harmonic minor'
-    else:  # '3'
-        to_raise={3,8,10}
-        for inst in pm.instruments:
-            for note in inst.notes:
-                if (note.pitch-tonic_pc)%12 in to_raise:
-                    note.pitch+=1
-        desc = 'major'
+    mode_lookup = {
+        '1': 'aeolian',
+        '2': 'harmonic_minor',
+        '3': 'major',
+        '4': 'dorian',
+        '5': 'phrygian',
+        '6': 'lydian',
+        '7': 'mixolydian',
+        '8': 'locrian',
+    }
+    target_mode = mode_lookup[conv]
+    desc = convert_to_mode(pm, tonic_pc, target_mode)
 
     # Write and cleanup
     pm.write(outp)
