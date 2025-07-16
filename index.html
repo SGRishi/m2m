@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>M2M Converter</title>
+<style>
+body {
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  font-size: 24px;
+  padding: 20px;
+}
+input, select, button {
+  background: #000;
+  color: #0f0;
+  border: 1px solid #0f0;
+  font-family: monospace;
+  font-size: 24px;
+  margin: 5px 0;
+}
+</style>
+</head>
+<body>
+<h1>M2M Converter</h1>
+<form action="/convert" method="post" enctype="multipart/form-data">
+<div>Upload MIDI file: <input type="file" name="midi"></div>
+<div>or YouTube URL: <input type="text" name="url" size="40"></div>
+<div>
+ Target mode:
+ <select name="mode">
+  <option value="aeolian">Aeolian</option>
+  <option value="harmonic_minor">Harmonic Minor</option>
+  <option value="dorian">Dorian</option>
+  <option value="phrygian">Phrygian</option>
+  <option value="lydian">Lydian</option>
+  <option value="mixolydian">Mixolydian</option>
+  <option value="locrian">Locrian</option>
+  <option value="major">Major</option>
+ </select>
+</div>
+<div>Output filename: <input type="text" name="out" value="output.mid"></div>
+<button type="submit">Convert</button>
+</form>
+</body>
+</html>
