@@ -1,0 +1,17 @@
+transkun
+yt-dlp
+ncls
+pretty\_midi
+scipy
+torch
+torchaudio
+mir\_eval
+pydub
+seaborn
+matplotlib
+tensorboard
+tqdm
+torch\_optimizer
+sox
+soxr
+moduleconf
